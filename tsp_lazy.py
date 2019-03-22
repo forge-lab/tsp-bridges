@@ -18,43 +18,43 @@ from gurobipy import *
 # Callback - use lazy constraints to eliminate sub-tours
 
 def subtourelim(model, where):
-    print("call subtourelim")
+    
     if where == GRB.Callback.MIPSOL:
+        print("call subtourelim")
         # make a list of edges selected in the solution
-        vars = model.getVars()
-        # print("===")
-        # print(vars)
-        vals = model.cbGetSolution(vars)
-        # print("===")
-        # print(vals)
-        selected = tuplelist((i,j) for i in range(n) for j in range(n) if vals[i*n+j] > 0.5)
-        # print("===")
-        # print(selected)
+        vals = model.cbGetSolution(model._vars)
+
+        selected = tuplelist((i,j) for i,j in model._vars.keys() if vals[i,j] > 0.5)
+
         # find the shortest cycle in the selected edge list
         tour = subtour(selected)
-        print("===")
-        print(tour)
+        print("tour len=:", len(tour), tour)
         if len(tour) < n:
+            constr = LinExpr()
+            for i,j in itertools.combinations(tour, 2): 
+                constr.add(model._vars[i,j])
+                constr.add(model._vars[j,i])
+            
             # add subtour elimination constraint for every pair of cities in tour
-            model.cbLazy(quicksum(model.getVarByName("e["+str(i)+","+str(j)+"]")
-                                  for i,j in itertools.combinations(tour, 2))
-                         <= len(tour)-1)
+            model.cbLazy(constr<= len(tour)-1)
 
 
 # Given a tuplelist of edges, find the shortest subtour
 
 def subtour(edges):
+
     unvisited = list(range(n))
     cycle = range(n+1) # initial length has 1 more city
     while unvisited: # true if list is non-empty
         thiscycle = []
         neighbors = unvisited
+
         while neighbors:
             current = neighbors[0]
             thiscycle.append(current)
             unvisited.remove(current)
             neighbors = [j for i,j in edges.select(current,'*') if j in unvisited]
-        if len(cycle) > len(thiscycle):
+        if len(thiscycle) < len(cycle):
             cycle = thiscycle
     return cycle
 
@@ -85,12 +85,11 @@ def parse(filename):
 
 
 n,d,adj = parse(sys.argv[1])
-# points = [(random.randint(0,100),random.randint(0,100)) for i in range(n)]
-# one point (x,0) the second field is redundant (for lazily adapt to input file purpose)
 
-dist = {(i,j) : d[i][j]
-    for i in range(n) for j in range(n)} # asymmetric
-
+dist = dict()
+for i in range(n):
+    for j in range(n):
+        if (i != j): dist[(i,j)] = d[i][j]
 m = Model()
 
 # Create variables
@@ -113,14 +112,23 @@ vars = m.addVars(dist.keys(), obj=dist, vtype=GRB.BINARY, name='e')
 
 # Add degree-2 constraint
 
-m.addConstrs(vars.sum(i,'*') == 2 for i in range(n))
+# m.addConstrs(vars.sum(i,'*') == 2 for i in range(n))
 # Using Python looping constructs, the preceding would be...
 #
-# for i in range(n):
-#   m.addConstr(sum(vars[i,j] for j in range(n)) == 2)
+
+for i in range(n):
+    expr1 = LinExpr()
+    expr2 = LinExpr()
+    for j in range(n):
+        if (i != j): 
+            expr1.add(vars[i,j])
+            expr2.add(vars[j,i])
+    m.addConstr(expr1 == 1)
+    m.addConstr(expr2 == 1)
 
 
 # Optimize model
+m._vars = vars
 m.Params.lazyConstraints = 1
 m.optimize(subtourelim)
 
