@@ -16,11 +16,11 @@ def parse(filename):
         n = int(l[:-1])
         for node in range(n):
             l = f.readline()
-
-            entries = l.split(" ")
-            print(entries, len(entries))
-
-            points = list(map(int, entries))
+            entries = l.split()
+            points = []
+            for neighbor in range(n):
+                points.append(int(entries[neighbor]))
+            assert(len(points) == n)
             # create adj 
             adj[node] = []
             for neighbor in range(n):
@@ -29,14 +29,14 @@ def parse(filename):
             dist.append(points)
     return n, dist, adj
 
-filename = sys.args[0]
+filename = sys.argv[1]
 
 # Parse argument
-n, dist, adj = parse()
+n, dist, adj = parse(filename)
 
 m = Model()
 
-# n cities, n-1 timestep 
+# n cities, n timestep 
 vars = m.addVars(n,n,vtype=GRB.BINARY, name="e")
 
 # 0. if fix start and end 
@@ -49,8 +49,9 @@ end = 3
 for city in range(n):
     m.addConstr(vars.sum(city,'*') == 1)
 
-# 2. each timestep visits only one city 
-for t in range(n-1):
+# 2. each timestep visits only one city
+for t in range(n):
+    print(vars.sum('*',t))
     m.addConstr(vars.sum('*',t) == 1)
 
 # 3. connectivity
@@ -62,8 +63,9 @@ for timestep in range(n-1):
         constr.add(1-vars[node, timestep])
         for neighbor in neighbors: 
             constr.add(vars[neighbor, timestep+1])
-            # print(constr)
-            # c = m.addConstr(constr, GRB.GREATER_EQUAL, 1)
+        # bug, wrong indentation, add constr after loop through neighbors
+        print(constr)
+        c = m.addConstr(constr, GRB.GREATER_EQUAL, 1)
             # print(c)
 
 # opt
@@ -78,10 +80,13 @@ m.setObjective(goal, GRB.MINIMIZE)
 
 m.optimize()
 
-print(m.printAttr('x') )
-print("===")
-
 print('')
 
 print('Optimal cost: %g' % m.objVal)
+print("print out solution in ascending timestep")
+vals = m.getAttr('x', vars)
+for timestep in range(n):
+    for i in range(n):
+            if (vals[(i,timestep)] > 0):
+                print("timestep ", timestep, ": ", i)
 print('')
