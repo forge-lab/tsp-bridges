@@ -20,15 +20,12 @@ from gurobipy import *
 def subtourelim(model, where):
     
     if where == GRB.Callback.MIPSOL:
-        print("call subtourelim")
         # make a list of edges selected in the solution
         vals = model.cbGetSolution(model._vars)
-
         selected = tuplelist((i,j) for i,j in model._vars.keys() if vals[i,j] > 0.5)
 
         # find the shortest cycle in the selected edge list
         tour = subtour(selected)
-        print("tour len=:", len(tour), tour)
         if len(tour) < n:
             constr = LinExpr()
             for i,j in itertools.combinations(tour, 2): 
