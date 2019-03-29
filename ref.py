@@ -72,11 +72,15 @@ dist = {(i,j) :
 
 m = Model()
 
+
 # Create variables
 
 vars = m.addVars(dist.keys(), obj=dist, vtype=GRB.BINARY, name='e')
+m.write("ref_output.lp")
 for i,j in vars.keys():
     vars[j,i] = vars[i,j] # edge in opposite direction
+
+
 
 # You could use Python looping constructs and m.addVar() to create
 # these decision variables instead.  The following would be equivalent
@@ -98,10 +102,19 @@ m.addConstrs(vars.sum(i,'*') == 2 for i in range(n))
 #   m.addConstr(sum(vars[i,j] for j in range(n)) == 2)
 
 
+
+
+
 # Optimize model
 
 m._vars = vars
 m.Params.lazyConstraints = 1
+
+
+# m.write("ref_output.lp")
+
+
+
 m.optimize(subtourelim)
 
 vals = m.getAttr('x', vars)
@@ -114,3 +127,4 @@ print('')
 print('Optimal tour: %s' % str(tour))
 print('Optimal cost: %g' % m.objVal)
 print('')
+

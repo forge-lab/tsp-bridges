@@ -1,29 +1,37 @@
-#!/usr/bin/python
+# Yinglan Chen
+# March 2019
 
-# Copyright 2018, Gurobi Optimization, LLC
+# adapted from reference code of tsp on gurobi website
+# https://www.gurobi.com/documentation/8.1/examples/tsp_py.html
+# http://examples.gurobi.com/traveling-salesman-problem/
+# change to be asymmetric and "visit each city once", not a round tour 
 
-# Solve a traveling salesman problem on a randomly generated set of
-# points using lazy constraints.   The base MIP model only includes
-# 'degree-2' constraints, requiring each node to have exactly
-# two incident edges.  Solutions to this model may contain subtours -
-# tours that don't visit every city.  The lazy constraint callback
-# adds new constraints to cut them off.
+# definition(s)
+# - subtours:
+#   tours that don't visit every city.  The lazy constraint callback
+#   adds new constraints to cut them off.
+
+# documentation
+# variables: x_ij = 1 if edge {i,j} in tour , represented as a tuple (i,j)
+# constraints:
+# - each node i has exactly one in-edge and one out-edge
+# - for any non-empty subset S, summing all directed edge (i,j) in S, we should have
+#   sum_{i,j} x_ij <= |S|-1, otherwise it forms a subtour 
 
 import sys
 import math
 import random
 import itertools
 from gurobipy import *
+from parse import parse
 
 # Callback - use lazy constraints to eliminate sub-tours
-
+# modified by myself
 def subtourelim(model, where):
-    
     if where == GRB.Callback.MIPSOL:
         # make a list of edges selected in the solution
         vals = model.cbGetSolution(model._vars)
         selected = tuplelist((i,j) for i,j in model._vars.keys() if vals[i,j] > 0.5)
-
         # find the shortest cycle in the selected edge list
         tour = subtour(selected)
         if len(tour) < n:
@@ -31,21 +39,18 @@ def subtourelim(model, where):
             for i,j in itertools.combinations(tour, 2): 
                 constr.add(model._vars[i,j])
                 constr.add(model._vars[j,i])
-            
             # add subtour elimination constraint for every pair of cities in tour
             model.cbLazy(constr<= len(tour)-1)
 
 
 # Given a tuplelist of edges, find the shortest subtour
-
+# no modification
 def subtour(edges):
-
     unvisited = list(range(n))
     cycle = range(n+1) # initial length has 1 more city
     while unvisited: # true if list is non-empty
         thiscycle = []
         neighbors = unvisited
-
         while neighbors:
             current = neighbors[0]
             thiscycle.append(current)
@@ -55,87 +60,57 @@ def subtour(edges):
             cycle = thiscycle
     return cycle
 
+def main():
+    # parse
+    global n, dist
+    n,d,adj = parse(sys.argv[1])
+    # create distance dictionary, with key = (i,j)
+    dist = dict()
+    for i in range(n):
+        for j in range(n):
+            if (i==j): continue
+            if (d[i][j] != -1): dist[(i,j)] = d[i][j]
+    m = Model()
 
-# Parse argument
+    # add variables (i,j)
+    vars = m.addVars(dist.keys(), vtype=GRB.BINARY, name='x')
 
+    # constraint: each node i has exactly one in-edge and one out-edge
+    for i in range(n):
+        expr1 = LinExpr() # init empty expr
+        expr2 = LinExpr()
+        for j in range(n): 
+            if (i != j): # enumerate all nodes other than i
+                if ((i,j) in dist): expr1.add(vars[i,j])
+                if ((j,i) in dist): expr2.add(vars[j,i])
+        m.addConstr(expr1 == 1) # one out-edge
+        m.addConstr(expr2 == 1) # one in-edge
 
-def parse(filename):
-    dist = []
-    adj = dict()
-    with open(filename) as f:
-        l = f.readline()
-        n = int(l[:-1])
-        for node in range(n):
-            l = f.readline()
-            entries = l.split()
-            points = []
-            for neighbor in range(n):
-                points.append(int(entries[neighbor]))
-            assert(len(points) == n)
-            # create adj 
-            adj[node] = []
-            for neighbor in range(n):
-                if (neighbor != node and points[neighbor] != -1): 
-                    adj[node].append(neighbor)
-            dist.append(points)
-    return n, dist, adj
+    # setObjective
+    goal = LinExpr()
+    for i in range(n):
+        for j in adj[i]:
+            goal.add(vars[(i,j)] * dist[(i,j)])
 
-
-n,d,adj = parse(sys.argv[1])
-
-dist = dict()
-for i in range(n):
-    for j in range(n):
-        if (i != j): dist[(i,j)] = d[i][j]
-m = Model()
-
-# Create variables
-foo_dict = {(i,j):0 for i in range(n) for j in range(n)}
-
-vars = m.addVars(dist.keys(), obj=dist, vtype=GRB.BINARY, name='e')
-# for i,j in vars.keys():
-#     vars[j,i] = vars[i,j] # edge in opposite direction
-
-# You could use Python looping constructs and m.addVar() to create
-# these decision variables instead.  The following would be equivalent
-# to the preceding m.addVars() call...
-#
-# vars = tupledict()
-# for i,j in dist.keys():
-#   dist[i][j], ith point, and jth point 
-#   vars[i,j] = m.addVar(obj=dist[i,j], vtype=GRB.BINARY,
-#                        name='e[%d,%d]'%(i,j))
+    m.setObjective(goal, GRB.MINIMIZE) 
 
 
-# Add degree-2 constraint
+    # Optimize model
+    m._vars = vars
+    m.Params.lazyConstraints = 1
 
-# m.addConstrs(vars.sum(i,'*') == 2 for i in range(n))
-# Using Python looping constructs, the preceding would be...
-#
+    m.optimize(subtourelim)
 
-for i in range(n):
-    expr1 = LinExpr()
-    expr2 = LinExpr()
-    for j in range(n):
-        if (i != j): 
-            expr1.add(vars[i,j])
-            expr2.add(vars[j,i])
-    m.addConstr(expr1 == 1)
-    m.addConstr(expr2 == 1)
+    vals = m.getAttr('x', vars)
+    selected = tuplelist((i,j) for i,j in vals.keys() if vals[i,j] > 0.5)
 
+    tour = subtour(selected)
+    assert len(tour) == n
 
-# Optimize model
-m._vars = vars
-m.Params.lazyConstraints = 1
-m.optimize(subtourelim)
+    print('')
+    print('Optimal tour: %s' % str(tour))
+    print('Optimal cost: %g' % m.objVal)
+    print('')
 
-vals = m.getAttr('x', vars)
-selected = tuplelist((i,j) for i,j in vals.keys() if vals[i,j] > 0.5)
-
-tour = subtour(selected)
-# assert len(tour) == n
-
-print('')
-print('Optimal tour: %s' % str(tour))
-print('Optimal cost: %g' % m.objVal)
-print('')
+if __name__ == '__main__':
+    main()
