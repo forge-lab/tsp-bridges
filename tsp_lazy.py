@@ -13,10 +13,14 @@
 
 # documentation
 # variables: x_ij = 1 if edge {i,j} in tour , represented as a tuple (i,j)
+
 # constraints:
 # - each node i has exactly one in-edge and one out-edge
 # - for any non-empty subset S, summing all directed edge (i,j) in S, we should have
 #   sum_{i,j} x_ij <= |S|-1, otherwise it forms a subtour 
+
+# objective:
+# - sum of all x_ij * d_ij
 
 import sys
 import math

@@ -1,17 +1,23 @@
-# Yinglan Chen 
+"""
+Yinglan Chen 
 
-# documentation
-# variables: x_t_i = 1 if city i is visited at timestep t , represented as a tuple (i,t)
-#            range: node i in [0,n-1], timestep t in [0, n-1]
+======================================
+           DOCUMENTATION
+======================================
+VARIABLES:
+x_t_i = 1 if city i is visited at timestep t , represented as a tuple (i,t)
+           range: node i in [0,n-1], timestep t in [0, n-1], inclusive
 
-# constraints:
-# - optional: if fix start and end point, x_0_start = 1, x_{n}_end = 1
-# - each city is visited once: forall i, sum_t x_t_i = 1
-# - each timestep visits only one city: forall t, sum_i x_t_i = 1
-# - connectivity: for each t, for each node n, x_n_t => OR x_nn_{t+1} where nn are neighbors 
+CONSTRAINTS:
+- optional: if fix start and end point, x_0_start = 1, x_{n}_end = 1
+- each city is visited once: forall i, sum_t x_t_i = 1
+- each timestep visits only one city: forall t, sum_i x_t_i = 1
+- connectivity: for each t, for each node n, x_n_t => OR x_nn_{t+1} where nn are neighbors 
 
-# objective:
-# - sum of t from 0 to n-1: x_i_t * x_j_t+1 * d_ij
+OBJECTIVE: 
+- sum of t from 0 to n-1: x_i_t * x_j_t+1 * d_ij
+
+"""
 
 import sys
 import math
@@ -30,7 +36,7 @@ n, dist, adj = parse(filename)
 m = Model()
 
 # n cities, n timestep 
-vars = m.addVars(n,n,vtype=GRB.BINARY, name="e")
+vars = m.addVars(n,n,vtype=GRB.BINARY, name="x")
 
 # 0. if fix start and end 
 start = 1

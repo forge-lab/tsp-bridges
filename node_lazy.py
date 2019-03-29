@@ -1,40 +1,42 @@
-#!/usr/bin/python
-# node and timestep
+"""
+Yinglan Chen
+March 2019
+
+======================================
+           DOCUMENTATION
+======================================
+
+VARIABLES:
+x_t_i = 1 if city i is visited at timestep t , represented as a tuple (i,t)
+           range: node i in [0,n-1], timestep t in [0, n-1], inclusive
+
+CONSTRAINTS:
+- optional: if fix start and end point, x_0_start = 1, x_{n}_end = 1
+- each city is visited once: forall i, sum_t x_t_i = 1
+- each timestep visits only one city: forall t, sum_i x_t_i = 1
+- connectivity (lazy): for each t, for each node n, x_n_t => OR x_nn_{t+1} where nn are neighbors 
+
+
+OBJECTIVE: 
+- sum of t from 0 to n-1: x_i_t * x_j_t+1 * d_ij
+
+Lazyness:
+if disconnect at timestep t, force connectivity at this timestep and city 
+
+"""
 
 import sys
 import math
 import random
 import itertools
 from gurobipy import *
+from parse import parse
 
 # lazy
 # check the shortest subtour, and add one more constraint
 
-def parse(filename):
-    dist = []
-    adj = dict()
-    with open(filename) as f:
-        l = f.readline()
-        n = int(l[:-1])
-        for node in range(n):
-            l = f.readline()
-            entries = l.split()
-            points = []
-            for neighbor in range(n):
-                points.append(int(entries[neighbor]))
-            assert(len(points) == n)
-            # create adj 
-            adj[node] = []
-            for neighbor in range(n):
-                if (neighbor != node and points[neighbor] != -1): 
-                    adj[node].append(neighbor)
-            dist.append(points)
-    return n, dist, adj
-
 # Callback - use lazy constraints to eliminate sub-tours
-
 def subtourelim(model, where):
-    
     if where == GRB.Callback.MIPSOL:
         # make a list of edges selected in the solution
         vals = model.cbGetSolution(model._vars)
@@ -47,10 +49,8 @@ def subtourelim(model, where):
             timestep = tour[1]
             print("broken at ", broken, t)
             constr = LinExpr()
-            
             # node t implies neighbor t+1
             neighbors = adj[broken]
-
             constr.add(-vars[broken, timestep])
             for neighbor in neighbors: 
                 constr.add(vars[neighbor, timestep+1])
@@ -58,8 +58,7 @@ def subtourelim(model, where):
             model.cbLazy(constr , GRB.GREATER_EQUAL, 0)
 
 
-# Given a tuplelist of city timestep, find the shortest subtour
-
+# Given a tuplelist of city timestep, validate connectivity 
 def subtour(steps):
     for t in range(n-1):
         curr = steps.select("*",t)[0][0]
