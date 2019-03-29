@@ -1,25 +1,35 @@
-# Yinglan Chen 
+"""
+Yinglan Chen
+March 2019
 
-# documentation
-# variables: e_uv_t = 1 if edge uv is visited at timestep t , represented as a triple (u,v,t)
-#            range: node u,v in [0,n-1], timestep t in [0, n-2], inclusive
+======================================
+           DOCUMENTATION
+======================================
 
-# constraints:
-# - optional: if fix start and end point, 
-#             sum_nb e_{start,nb}_0 = 1, where nb's are start's neighbors
-#             sum_nb e_{end, nb}_t-2 = 1, where nb's are end's neighbors
-# - each time step visits exactly one edge: 
-#   forall t, sum_uv e_uv_t = 1
-# - optional: each edge is visited at most once [covered by the next constraints]
-#   forall (u,v), sum_t e_uv_t <= 1, t in range(n-1)
-# - each node (not start and end) is visited exactly once : 
-#   fix node n, define nn to be n's neighbors
-#   sum_{nn,t} e_{n,nn}_t + e_{nn,n}_t = 1
-# - connectivity: 
-#   for t and edge (n, nb), e_{n,nb}_t => OR e_{nb, nbb}_{t+1}
+VARIABLES:
+e_uv_t = 1 if edge uv is visited at timestep t , represented as a triple (u,v,t)
+           range: node u,v in [0,n-1], timestep t in [0, n-2], inclusive
 
-# objective:
-# - sum of all t and uv: e_uv_t * d_uv
+CONSTRAINTS:
+- optional: if fix start and end point, 
+             sum_nb e_{start,nb}_0 = 1, where nb's are start's neighbors
+             sum_nb e_{end, nb}_t-2 = 1, where nb's are end's neighbors
+ - each time step visits exactly one edge: 
+   forall t, sum_uv e_uv_t = 1
+ - optional: each edge is visited at most once [covered by the next constraints]
+   forall (u,v), sum_t e_uv_t <= 1, t in range(n-1)
+- each node (not start and end) is visited exactly once : 
+  fix node n, define nn to be n's neighbors
+  sum_{nn,t} e_{n,nn}_t + e_{nn,n}_t = 1
+- connectivity: 
+  for t and edge (n, nb), e_{n,nb}_t => OR e_{nb, nbb}_{t+1}
+
+OBJECTIVE: 
+- sum of all t and uv: e_uv_t * d_uv
+
+======================================
+
+"""
 
 import sys
 import math
