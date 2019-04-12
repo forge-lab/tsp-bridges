@@ -31,13 +31,14 @@ from parse import parse
 
 # Callback - use lazy constraints to eliminate sub-tours
 # modified by myself
-def subtourelim(model, where):
+def eliminate_disconnect(model, where):
     if where == GRB.Callback.MIPSOL:
         # make a list of edges selected in the solution
         vals = model.cbGetSolution(model._vars)
         selected = tuplelist((i,j) for i,j in model._vars.keys() if vals[i,j] > 0.5)
+        # print("===",selected)
         # find the shortest cycle in the selected edge list
-        tour = subtour(selected)
+        tour = detectDisconnect(selected)
         if len(tour) < n:
             constr = LinExpr()
             for i,j in itertools.combinations(tour, 2): 
@@ -49,20 +50,14 @@ def subtourelim(model, where):
 
 # Given a tuplelist of edges, find the shortest subtour
 # no modification
-def subtour(edges):
-    unvisited = list(range(n))
-    cycle = range(n+1) # initial length has 1 more city
-    while unvisited: # true if list is non-empty
-        thiscycle = []
-        neighbors = unvisited
-        while neighbors:
-            current = neighbors[0]
-            thiscycle.append(current)
-            unvisited.remove(current)
-            neighbors = [j for i,j in edges.select(current,'*') if j in unvisited]
-        if len(thiscycle) < len(cycle):
-            cycle = thiscycle
-    return cycle
+# wrong: we do not want a cycle, but we do not want a 
+def detectDisconnect(edges):
+    # correct_Version:
+    for i in range(len(edges)-1):
+        curr = edges[i]
+        next = edges[i+1]
+        if (curr[1] != next[0]): # disconnected 
+
 
 def main():
     # parse
@@ -77,7 +72,7 @@ def main():
     m = Model()
 
     # add variables (i,j)
-    vars = m.addVars(dist.keys(), vtype=GRB.BINARY, name='x')
+    vars = m.addVars(dist.keys(), obj=dist, vtype=GRB.BINARY, name='x')
 
     # constraint: each node i has exactly one in-edge and one out-edge
     for i in range(n):
@@ -91,24 +86,25 @@ def main():
         m.addConstr(expr2 == 1) # one in-edge
 
     # setObjective
-    goal = LinExpr()
-    for i in range(n):
-        for j in adj[i]:
-            goal.add(vars[(i,j)] * dist[(i,j)])
+    # goal = LinExpr()
+    # for i in range(n):
+    #     for j in adj[i]:
+    #         goal.add(vars[(i,j)] * dist[(i,j)])
 
-    m.setObjective(goal, GRB.MINIMIZE) 
+    # m.setObjective(goal, GRB.MINIMIZE) 
 
 
     # Optimize model
     m._vars = vars
     m.Params.lazyConstraints = 1
 
-    m.optimize(subtourelim)
+    m.optimize(eliminate_disconnect)
+
 
     vals = m.getAttr('x', vars)
     selected = tuplelist((i,j) for i,j in vals.keys() if vals[i,j] > 0.5)
 
-    tour = subtour(selected)
+    tour = detectDisconnect(selected)
     assert len(tour) == n
 
     print('')

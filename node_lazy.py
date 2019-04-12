@@ -73,10 +73,18 @@ filename = sys.argv[1]
 # Parse argument
 n, dist, adj = parse(filename)
 
+# create a dictionary d with only connected (i,j)
+d = dict()
+for i in range(n):
+    for j in range(n):
+        if i == j: continue
+        if dist[i][j] != -1: d[(i,j)] = dist[i][j]
+
 m = Model()
 
 # n cities, n timestep 
-vars = m.addVars(n,n,vtype=GRB.BINARY, name="e")
+# vars = m.addVars(n,n,vtype=GRB.BINARY, name="e")
+vars = m.addVars(n,n, obj=d, vtype=GRB.BINARY, name="e")
 
 # 0. if fix start and end 
 start = 1
