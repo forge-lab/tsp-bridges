@@ -8,21 +8,32 @@ def subtourelim(model, where):
         # make a list of edges selected in the solution
         vals = model.cbGetSolution(model._vars)
         selected = tuplelist((i,t) for i,t in model._vars.keys() if vals[(i,t)] > 0.5)
-        # print(selected)
+        print("selected: ", selected)
         # find the shortest cycle in the selected edge list
         tour = subtour(selected) # None indicate success
+        print("tour: ", tour)
         if tour != None:
             broken = tour[0]
-            timestep = tour[1]
-            print("broken at ", broken, t)
-            constr = LinExpr()
+            broken2 = tour[1]
+            timestep = tour[2]
+            print("broken at vertices ", broken, broken2, "at timestep ", timestep)
+            
             # node t implies neighbor t+1
+            # x_t => (n1_t+1 or n2_t+1)
+            # (1-x_t) or n1_t+1 or n2_t+1 .. 
+            constr = LinExpr()
             neighbors = adj[broken]
-            constr.add(-vars[broken, timestep])
-            for neighbor in neighbors: 
-                constr.add(vars[neighbor, timestep+1])
-            print(constr, "===")
-            model.cbLazy(constr , GRB.GREATER_EQUAL, 0)
+            try:
+                constr.add(1 - model._vars[broken, timestep])
+                for n in neighbors: 
+                    constr.add(model._vars[(n, timestep+1)])
+                print("newly added: ",constr)
+                model.cbLazy(constr >= 1)
+
+
+            # tried to enforce all timestep but impossible
+            except GurobiError as e:
+                print('Error code ' + str(e.errno) + ": " + str(e))
 
 
 # Given a tuplelist of city timestep, validate connectivity 
@@ -30,8 +41,8 @@ def subtour(steps):
     for t in range(n-1):
         curr = steps.select("*",t)[0][0]
         next = steps.select("*",t+1)[0][0]
-        if dist[(curr,next)] == -1:
-            return (curr, t)
+        if (curr,next) not in dist:
+            return (curr, next, t)
     return None
 
 
@@ -122,10 +133,12 @@ goal = QuadExpr()
 for t in range(T-1):
     for i in nodes:
         for j in adj[i]:
-            w = dist[(i,j)]
-            goal.add(vars_n[(i,t)] * vars_n[(j,t+1)] * w)
+            if (i,j) in dist:
+                w = dist[(i,j)]
+                goal.add(vars_n[(i,t)] * vars_n[(j,t+1)] * w)
 
 m._vars = vars_n
+m.Params.lazyConstraints = 1
 m.setObjective(goal, GRB.MINIMIZE) 
 
 m.optimize(subtourelim)
@@ -136,9 +149,10 @@ print('')
 print('Optimal cost: %g' % m.objVal)
 print("print out solution in ascending timestep")
 vals = m.getAttr('x', vars_n)
+print(vals)
 for timestep in range(T):
     for n in nodes:
-        if (vals[(n,timestep)] > 0):
+        if (vals[(n,timestep)] > 0): 
             print("timestep ", timestep, ": ", n)
 vals = m.getAttr('x', vars_b)
 print(vals)
