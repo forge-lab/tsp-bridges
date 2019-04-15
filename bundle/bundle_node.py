@@ -143,9 +143,11 @@ for x in nodes: # 7
                 c2.add(1 - vars_n[x,t])
                 c2.add(1 - vars_n[n,t+1])
                 c1.add(vars_b[bd[x], t])
-                c2.add(1 - vars_b[bd[n], t+1])
+                if t == T-2: c2.add(vars_b[bd[n], t+1])
+                else: c2.add(1 - vars_b[bd[n], t+1])
                 m.addConstr(c1, GRB.GREATER_EQUAL, 1)
                 m.addConstr(c2, GRB.GREATER_EQUAL, 1)
+
 
             for b in range(B):
                 if b == bd[x]: continue
