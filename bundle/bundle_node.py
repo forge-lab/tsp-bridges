@@ -87,10 +87,12 @@ for t in range(T):
 
 # 3. each bundle is visited at least once 
 for b in range(B):
-    m.addConstr(vars_b.sum(b, '*') >= 1)
+    m.addConstr(vars_b.sum(b, '*') >= 1) # no bundle left alone 
 
-for t in range(T):
-    m.addConstr(vars_b.sum('*', t) >= 1)
+
+# BUGGY: at time step 1, it should be 0, cuz we set var to one when exit the bundle 
+# for t in range(T):
+#     m.addConstr(vars_b.sum('*', t) >= 1)
 
 # 4. once leave a bundle, cannot comeback 
 # once visited, always set to one 
@@ -112,19 +114,48 @@ for x in nodes: # 7
                 c = LinExpr()
                 c.add(1 - vars_n[(x,t)])
                 c.add(1 - vars_n[(n,t+1)])
-                c.add(1 - vars_b[(bd[x], t)] - vars_b[(bd[n], t+1)]) # b = 0
+                # c.add(1 - vars_b[(bd[x], t)] - vars_b[(bd[n], t+1)]) # b = 0
+                c.add(1 - vars_b[(bd[x], t)])
                 m.addConstr(c, GRB.GREATER_EQUAL, 1)
+
+
+            # new !!!
+            # iterate all bundles except bd[x]
+            for b in range(B):
+                if b == bd[x]: continue
+                for t in range(T-1):
+                    c = LinExpr()
+                    # b_t = 0 => b_t+1 = 0
+                    c.add(vars_b[(b,t)])
+                    c.add(1 - vars_b[(b, t+1)])
+                    m.addConstr(c, GRB.GREATER_EQUAL, 1)
+
         else: 
             # x_t = 1 and n_t+1 = 1 => (b1_t = 1 and b2_t+1 = 0)
             # [not (x_t = 1 and n_t+1 = 1)] or ()
             # [x_t = 0 or n_t+1 = 0] or (b1_t = 0 and b2_t+1 = 1)
             # (1 - x_t) +(1 - n_t+1) + ( b1_t - b2_t+1 == 1) >= 1 
             for t in range(T-1): # 0
-                c = LinExpr()
-                c.add(1 - vars_n[x,t])
-                c.add(1 - vars_n[n,t+1])
-                c.add(vars_b[bd[x], t] -  vars_b[bd[n], t+1]) # b = 0 
-                m.addConstr(c, GRB.GREATER_EQUAL, 1)
+                c1 = LinExpr()
+                c2 = LinExpr()
+                c1.add(1 - vars_n[x,t])
+                c1.add(1 - vars_n[n,t+1])
+                c2.add(1 - vars_n[x,t])
+                c2.add(1 - vars_n[n,t+1])
+                c1.add(vars_b[bd[x], t])
+                c2.add(1 - vars_b[bd[n], t+1])
+                m.addConstr(c1, GRB.GREATER_EQUAL, 1)
+                m.addConstr(c2, GRB.GREATER_EQUAL, 1)
+
+            for b in range(B):
+                if b == bd[x]: continue
+                if b == bd[n]: continue
+                for t in range(T-1):
+                    c = LinExpr()
+                    # b_t = 0 => b_t+1 = 0
+                    c.add(vars_b[(b,t)])
+                    c.add(1 - vars_b[(b, t+1)])
+                    m.addConstr(c, GRB.GREATER_EQUAL, 1)
 
 
 

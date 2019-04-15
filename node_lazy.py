@@ -38,24 +38,27 @@ from parse import parse
 # Callback - use lazy constraints to eliminate sub-tours
 def subtourelim(model, where):
     if where == GRB.Callback.MIPSOL:
-        # make a list of edges selected in the solution
-        vals = model.cbGetSolution(model._vars)
-        selected = tuplelist((i,t) for i,t in model._vars.keys() if vals[i,t] > 0.5)
+        try: 
+            # make a list of edges selected in the solution
+            vals = model.cbGetSolution(model._vars)
+            selected = tuplelist((i,t) for i,t in model._vars.keys() if vals[i,t] > 0.5)
 
-        # find the shortest cycle in the selected edge list
-        tour = subtour(selected) # None indicate success
-        if tour != None:
-            broken = tour[0]
-            timestep = tour[1]
-            print("broken at ", broken, t)
-            constr = LinExpr()
-            # node t implies neighbor t+1
-            neighbors = adj[broken]
-            constr.add(-vars[broken, timestep])
-            for neighbor in neighbors: 
-                constr.add(vars[neighbor, timestep+1])
-            print(constr, "===")
-            model.cbLazy(constr , GRB.GREATER_EQUAL, 0)
+            # find the shortest cycle in the selected edge list
+            tour = subtour(selected) # None indicate success
+            if tour != None:
+                broken = tour[0]
+                timestep = tour[1]
+                print("broken at ", broken, t)
+                constr = LinExpr()
+                # node t implies neighbor t+1
+                neighbors = adj[broken]
+                constr.add(-vars[broken, timestep])
+                for neighbor in neighbors: 
+                    constr.add(vars[neighbor, timestep+1])
+                print(constr, "===")
+                model.cbLazy(constr , GRB.GREATER_EQUAL, 0)
+        except  GurobiError as e:
+            print('Error code ' + str(e.errno) + ": " + str(e))
 
 
 # Given a tuplelist of city timestep, validate connectivity 
