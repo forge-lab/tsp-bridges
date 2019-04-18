@@ -1,3 +1,5 @@
+
+
 # node with bundle
 from parse import parse_node_dist,parse_bundle,get_bundle_dict
 import sys 
@@ -7,11 +9,12 @@ def subtourelim(model, where):
     if where == GRB.Callback.MIPSOL:
         # make a list of edges selected in the solution
         vals = model.cbGetSolution(model._vars)
+        bvals = model.cbGetSolution(model._bundles)
         selected = tuplelist((i,t) for i,t in model._vars.keys() if vals[(i,t)] > 0.5)
         print("selected: ", selected)
+        print("bundles: ", bvals)
         # find the shortest cycle in the selected edge list
         tour = subtour(selected) # None indicate success
-        print("tour: ", tour)
         if tour != None:
             broken = tour[0]
             broken2 = tour[1]
@@ -74,7 +77,6 @@ vars_n = m.addVars(nodes,T,vtype=GRB.BINARY, name="x")
 vars_b = m.addVars(B, T, vtype=GRB.BINARY, name="b")
 m.update()
 
-
 # 1. each node is visited at most once 
 for city in nodes:
     # print(vars_n.sum(city,'*'))
@@ -82,7 +84,7 @@ for city in nodes:
 
 # 2. each timestep visits only one node
 for t in range(T):
-    # print(vars_n.sum('*',t))
+    # print(vars_n.sum('*' ,t))
     m.addConstr(vars_n.sum('*',t) == 1)
 
 # 3. each bundle is visited at least once 
@@ -90,9 +92,9 @@ for b in range(B):
     m.addConstr(vars_b.sum(b, '*') >= 1) # no bundle left alone 
 
 
-# BUGGY: at time step 1, it should be 0, cuz we set var to one when exit the bundle 
-# for t in range(T):
-#     m.addConstr(vars_b.sum('*', t) >= 1)
+# at timestep 0, cannot have more than one "true"
+m.addConstr(vars_b.sum('*', 0) == 0)
+
 
 # 4. once leave a bundle, cannot comeback 
 # once visited, always set to one 
@@ -104,19 +106,28 @@ for b in range(B):
         c.add(vars_b[(b,t+1)])
         m.addConstr(c, GRB.GREATER_EQUAL, 1)
 
-for x in nodes: # 7
-    neighbors = adj[x]
-    for n in neighbors: # 1
+for x in nodes:
+    # neighbors = adj[x]
+    # for n in neighbors:
+    for n in nodes:
+        if n == x: continue
         if bd[x] == bd[n]: # within the same bundle 
-            # x_t = 1 and n_t+1 = 1 => (b1_t = 0)
-            # x_t = 0 or n_t+1 = 0 or (1 - b1_t == 1)
+            # x_t = 1 and n_t+1 = 1 => (b1_t = 0 & b1_t+1 = 0)
+            # !x_t  or !n_t+1  or (!b1_t and !b1_t+1)
+            # c1: !x_t  or !n_t+1  or !b1_t 
+            # c2: !x_t  or !n_t+1  or !b1_t+1
+
             for t in range(T-1):
-                c = LinExpr()
-                c.add(1 - vars_n[(x,t)])
-                c.add(1 - vars_n[(n,t+1)])
-                # c.add(1 - vars_b[(bd[x], t)] - vars_b[(bd[n], t+1)]) # b = 0
-                c.add(1 - vars_b[(bd[x], t)])
-                m.addConstr(c, GRB.GREATER_EQUAL, 1)
+                c1 = LinExpr()
+                c2 = LinExpr()
+                c1.add(1 - vars_n[(x,t)])
+                c2.add(1 - vars_n[(x,t)])
+                c1.add(1 - vars_n[(n,t+1)])
+                c2.add(1 - vars_n[(n,t+1)])
+                c1.add(1 - vars_b[(bd[x], t)])
+                c2.add(1 - vars_b[(bd[n], t+1)])
+                m.addConstr(c1, GRB.GREATER_EQUAL, 1) # c1 and c2
+                m.addConstr(c2, GRB.GREATER_EQUAL, 1)
 
 
             # new !!!
@@ -125,24 +136,29 @@ for x in nodes: # 7
                 if b == bd[x]: continue
                 for t in range(T-1):
                     c = LinExpr()
-                    # b_t = 0 => b_t+1 = 0
+                    # bug here should be: 
+                    # x_t = 1 and n_t+1 = 1 and b_t = 0 => b_t+1 = 0
+                    # !x_t or !n_t+1 or b_t or !b_t+1
+                    c.add(1 - vars_n[(x,t)])
+                    c.add(1 - vars_n[(n, t+1)])
                     c.add(vars_b[(b,t)])
                     c.add(1 - vars_b[(b, t+1)])
+                    # print(c)
                     m.addConstr(c, GRB.GREATER_EQUAL, 1)
 
         else: 
-            # x_t = 1 and n_t+1 = 1 => (b1_t = 1 and b2_t+1 = 0)
-            # [not (x_t = 1 and n_t+1 = 1)] or ()
-            # [x_t = 0 or n_t+1 = 0] or (b1_t = 0 and b2_t+1 = 1)
-            # (1 - x_t) +(1 - n_t+1) + ( b1_t - b2_t+1 == 1) >= 1 
-            for t in range(T-1): # 0
+            # x_t = 1 and n_t+1 = 1 => (b1_t+1 = 1 and b2_t+1 = 0)
+            # !x_t or  !n_t+1 or (b1_t+1  and !b2_t+1)
+            # c1: !x_t or !n_t+1 or b1_t+1 
+            # c2: !x_t or !n_t+1 or !b2_t+1 
+            for t in range(T-1):
                 c1 = LinExpr()
                 c2 = LinExpr()
                 c1.add(1 - vars_n[x,t])
                 c1.add(1 - vars_n[n,t+1])
                 c2.add(1 - vars_n[x,t])
                 c2.add(1 - vars_n[n,t+1])
-                c1.add(vars_b[bd[x], t])
+                c1.add(vars_b[bd[x], t+1])
                 if t == T-2: c2.add(vars_b[bd[n], t+1])
                 else: c2.add(1 - vars_b[bd[n], t+1])
                 m.addConstr(c1, GRB.GREATER_EQUAL, 1)
@@ -152,12 +168,19 @@ for x in nodes: # 7
             for b in range(B):
                 if b == bd[x]: continue
                 if b == bd[n]: continue
+                print(bd[x], bd[n])
                 for t in range(T-1):
                     c = LinExpr()
-                    # b_t = 0 => b_t+1 = 0
+                    # x_t = 1 and n_t+1 = 1 and b_t = 0 => b_t+1 = 0
+                    # !x_t or !n_t+1 or b_t or !b_t+!
+                    # bug here, should add x = 1 and x = 1
+                    c.add(1 - vars_n[(x,t)])
+                    c.add(1 - vars_n[(n, t+1)])
                     c.add(vars_b[(b,t)])
                     c.add(1 - vars_b[(b, t+1)])
+                    print(c)
                     m.addConstr(c, GRB.GREATER_EQUAL, 1)
+                print("===")
 
 
 
@@ -171,6 +194,7 @@ for t in range(T-1):
                 goal.add(vars_n[(i,t)] * vars_n[(j,t+1)] * w)
 
 m._vars = vars_n
+m._bundles = vars_b
 m.Params.lazyConstraints = 1
 m.setObjective(goal, GRB.MINIMIZE) 
 
