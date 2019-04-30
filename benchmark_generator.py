@@ -3,6 +3,11 @@
 
 # first output a file of bundles 
 import json, random
+import sys
+
+print(sys.argv[1], sys.argv[2])
+k = int(sys.argv[1])
+test_id = int(sys.argv[2])
 
 filename = "bridge_node_correspondence.csv"
 all_dist = "all_distance_matrix.csv"
@@ -10,9 +15,7 @@ all_dist = "all_distance_matrix.csv"
 def parse_node_dist(filename):
     nodes = []
     dist = dict() # dist[(i,j)] 
-
     with open(filename) as f:
-
         # read the second line for node ids 
         l = f.readline()[:-1] # ignore "/n"
         entries = l.split(",")
@@ -23,12 +26,8 @@ def parse_node_dist(filename):
         haha = True
         for row in range(n):
             l = f.readline()[:-1]
-            
             entries = l.split(",")
-            
             # First extract node u 
-
-
             u = int(entries[0][1:-1])
             d = []
             for vi in range(len(entries[1:])):
@@ -39,23 +38,6 @@ def parse_node_dist(filename):
                 else:
 
                     dist[(u,v)] = int(float(d_str))
-
-                    
-            
-
-            # adj[u]
-            # u_neighbors = []
-            
-            # for d_str in entries[1:]:
-            #     print(d_str)
-            # d = list(map(int, entries[1:]))
-            # for vi in range(n):
-            #     v = nodes[vi]
-            #     if (d[vi] != -1 and v != u):
-            #         dist[(u,v)] = d[vi]
-            #         u_neighbors.append(v)
-            # adj[u] = u_neighbors
-
     return nodes, dist
 
 
@@ -94,17 +76,18 @@ def random_choose_bundles(bundles, k):
     for bid in sample:
         result.append(bundles[bid])
 
-    with open('benchmark_bundle.list', 'w') as outfile:
+    with open('test'+str(k)+'/bundle' + str(test_id), 'w') as outfile:
         for nodes in result:
             outfile.write(str(nodes)[1:-1] + "\n")
     return result
 
-sample = random_choose_bundles(bundles, 2)
+sample = random_choose_bundles(bundles, k)
 print("sample:", sample)
 
 def create_dist_matrix(sample):
     nodes = [node for bundle in sample for node in bundle]
     n = len(nodes)
+
     header = "0 "
     for node in nodes:
         header += str(node) + " "
@@ -118,8 +101,8 @@ def create_dist_matrix(sample):
         body = body[:-1] + "\n"
 
 
-    print(header + "\n" +  body)
-    with open('benchmark_node_dist.matrix', 'w') as outfile:
+    print(str(n) + "\n" + header + "\n" +  body)
+    with open('test'+str(k)+'/node' + str(test_id), 'w') as outfile:
         
         outfile.write(header + "\n" +  body)
 
@@ -127,7 +110,3 @@ def create_dist_matrix(sample):
 
 all_nodes, all_dist = parse_node_dist("all_distance_matrix.csv")
 create_dist_matrix(sample)
-
-
-
-
