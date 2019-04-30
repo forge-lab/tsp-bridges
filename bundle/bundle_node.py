@@ -37,7 +37,6 @@ def subtourelim(model, where):
             except GurobiError as e:
                 print('Error code ' + str(e.errno) + ": " + str(e))
 
-
 # Given a tuplelist of city timestep, validate connectivity 
 def subtour(steps):
     for t in range(n-1):
@@ -47,8 +46,31 @@ def subtour(steps):
             return (curr, next, t)
     return None
 
+# each node is visited at most once 
+def node_constr(m, vars_n):
+    for city in nodes:
+        m.addConstr(vars_n.sum(city,'*') <= 1)
 
+def timestep_constr(m, vars_n):
+    for t in range(T):
+        # print(vars_n.sum('*' ,t))
+        m.addConstr(vars_n.sum('*',t) == 1)
 
+def bundle_visit_constr(m, vars_b):
+    for b in range(B):
+        m.addConstr(vars_b[(b, T-1)] == 1) # no bundle left alone 
+
+def bundle_start_constr(m, vars_b):
+    m.addConstr(vars_b.sum('*', 0) == 0)
+
+def bundle_maintain_visited(m, vars_b):
+    for b in range(B):
+        for t in range(T-1):
+            c = LinExpr()
+            # b_t => b_t+1
+            c.add(1 - vars_b[(b, t)]) 
+            c.add(vars_b[(b,t+1)])
+            m.addConstr(c, GRB.GREATER_EQUAL, 1)
 
 def solve(T):
     # create model 
@@ -58,33 +80,22 @@ def solve(T):
     m.update()
 
     # 1. each node is visited at most once 
-    for city in nodes:
-        # print(vars_n.sum(city,'*'))
-        m.addConstr(vars_n.sum(city,'*') <= 1)
-
+    node_constr(m, vars_n)
+    
     # 2. each timestep visits only one node
-    for t in range(T):
-        # print(vars_n.sum('*' ,t))
-        m.addConstr(vars_n.sum('*',t) == 1)
+    timestep_constr(m, vars_n)
+    
 
     # 3. each bundle is visited at least once 
-    for b in range(B):
-        m.addConstr(vars_b.sum(b, '*') >= 1) # no bundle left alone 
-
+    bundle_visit_constr(m, vars_b)
 
     # at timestep 0, cannot have more than one "true"
-    m.addConstr(vars_b.sum('*', 0) == 0)
+    bundle_start_constr(m, vars_b)
 
 
     # 4. once leave a bundle, cannot comeback 
     # once visited, always set to one 
-    for b in range(B):
-        for t in range(T-1):
-            c = LinExpr()
-            # b_t => b_t+1
-            c.add(1 - vars_b[(b, t)]) 
-            c.add(vars_b[(b,t+1)])
-            m.addConstr(c, GRB.GREATER_EQUAL, 1)
+    bundle_maintain_visited(m, vars_b)
 
     for x in nodes:
         # neighbors = adj[x]
@@ -202,7 +213,7 @@ def solve(T):
 
 def main():
     # Parse argument: need new input format
-    global nodes, dist, adj, B, bundles, bd, n
+    global nodes, dist, adj, B, bundles, bd, n, T
     node_file = sys.argv[1]
     bundle_file = sys.argv[2]
     nodes, dist, adj = parse_node_dist(node_file)
@@ -219,11 +230,13 @@ def main():
     print("==============")
 
     for T in range(B, n):
+        print("############################## T = ", T)
         if solve(T): 
             print("SOLVED AT T = ", T)
-            break
-        else:
-            print("TRIED all T, INFEASIBLE")
+            return
+        
+    print("TRIED all T, INFEASIBLE")
+    return
 
 
 if __name__ == '__main__':
