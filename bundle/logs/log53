@@ -1,0 +1,71 @@
+############################## T =  5
+Academic license - for non-commercial use only
+Changed value of parameter lazyConstraints to 1
+   Prev: 0  Min: 0  Max: 1  Default: 0
+Optimize a model with 3428 rows, 90 columns and 12348 nonzeros
+Model has 624 quadratic objective terms
+Variable types: 0 continuous, 90 integer (90 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [0e+00, 0e+00]
+  QObjective range [2e+01, 3e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 2e+00]
+Presolve removed 501 rows and 10 columns
+Presolve time: 0.02s
+Presolved: 3551 rows, 704 columns, 11730 nonzeros
+Variable types: 0 continuous, 704 integer (704 binary)
+Found heuristic solution: objective 34901.000000
+
+Root relaxation: objective 0.000000e+00, 16 iterations, 0.00 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00000    0   10 34901.0000    0.00000   100%     -    0s
+H    0     0                    29753.000000    0.00000   100%     -    0s
+     0     0    0.00000    0   14 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   14 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   12 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   10 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   11 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   10 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   12 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   14 29753.0000    0.00000   100%     -    0s
+     0     0    0.00000    0   14 29753.0000    0.00000   100%     -    0s
+     0     2    0.00000    0   14 29753.0000    0.00000   100%     -    0s
+*  304   179              24    29615.000000    0.00000   100%   8.0    0s
+H  852   424                    29512.000000 1178.60000  96.0%   8.6    2s
+*  897   409              27    29478.000000 1178.60000  96.0%   8.9    2s
+* 1653   443              39    28920.000000 1178.60000  95.9%  10.2    3s
+  2816   647     cutoff   40      28920.0000 1178.60000  95.9%  10.9    5s
+H 2958   656                    28916.000000 1197.67123  95.9%  10.8    5s
+* 4262   773              49    28913.000000 6049.00000  79.1%  10.4    6s
+* 5299   848              49    28898.000000 9307.00000  67.8%  10.3    7s
+* 5729   883              36    28625.000000 9519.00000  66.7%  10.1    7s
+* 7262   914              29    28544.000000 10916.7500  61.8%   9.8    8s
+  9195   850 27676.0000   43   19 28544.0000 12219.0000  57.2%   9.2   10s
+
+Cutting planes:
+  Gomory: 1
+  Flow cover: 3
+  Inf proof: 3
+  Zero half: 7
+
+Explored 12824 nodes (106993 simplex iterations) in 11.91 seconds
+Thread count was 4 (of 4 available processors)
+
+Solution count 10: 28544 28625 28898 ... 29753
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 2.854400000000e+04, best bound 2.854400000000e+04, gap 0.0000%
+
+Optimal cost: 28544
+print out solution in ascending timestep
+timestep  0 :  97689
+timestep  1 :  24903
+timestep  2 :  79252
+timestep  3 :  91375
+timestep  4 :  88685
+{(0, 0): 0.0, (0, 1): -0.0, (0, 2): -0.0, (0, 3): -0.0, (0, 4): 1.0, (1, 0): 0.0, (1, 1): 0.9999999999999998, (1, 2): 1.0, (1, 3): 1.0, (1, 4): 1.0, (2, 0): 0.0, (2, 1): -0.0, (2, 2): 1.0, (2, 3): 1.0, (2, 4): 1.0, (3, 0): 0.0, (3, 1): -0.0, (3, 2): -0.0, (3, 3): 1.0, (3, 4): 1.0, (4, 0): 0.0, (4, 1): -0.0, (4, 2): 0.0, (4, 3): 0.0, (4, 4): 1.0}
+SOLVED AT T =  5

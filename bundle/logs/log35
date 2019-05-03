@@ -1,0 +1,54 @@
+############################## T =  3
+Academic license - for non-commercial use only
+Changed value of parameter lazyConstraints to 1
+   Prev: 0  Min: 0  Max: 1  Default: 0
+Optimize a model with 235 rows, 27 columns and 774 nonzeros
+Model has 60 quadratic objective terms
+Variable types: 0 continuous, 27 integer (27 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [0e+00, 0e+00]
+  QObjective range [8e+01, 1e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 2e+00]
+Found heuristic solution: objective 7036.0000000
+Presolve removed 85 rows and 6 columns
+Presolve time: 0.00s
+Presolved: 210 rows, 81 columns, 642 nonzeros
+Variable types: 0 continuous, 81 integer (81 binary)
+
+Root relaxation: objective 0.000000e+00, 8 iterations, 0.00 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00000    0    6 7036.00000    0.00000   100%     -    0s
+H    0     0                    6652.0000000    0.00000   100%     -    0s
+     0     0    0.00000    0    6 6652.00000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 6652.00000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 6652.00000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 6652.00000    0.00000   100%     -    0s
+H    0     0                    6628.0000000    0.00000   100%     -    0s
+H    0     0                    6459.0000000    0.00000   100%     -    0s
+     0     2    0.00000    0    8 6459.00000    0.00000   100%     -    0s
+
+Cutting planes:
+  Gomory: 1
+  MIR: 1
+  Zero half: 5
+
+Explored 41 nodes (228 simplex iterations) in 0.05 seconds
+Thread count was 4 (of 4 available processors)
+
+Solution count 4: 6459 6628 6652 7036 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 6.459000000000e+03, best bound 6.459000000000e+03, gap 0.0000%
+
+Optimal cost: 6459
+print out solution in ascending timestep
+timestep  0 :  100575
+timestep  1 :  91615
+timestep  2 :  87572
+{(0, 0): 0.0, (0, 1): 0.0, (0, 2): 1.0, (1, 0): 0.0, (1, 1): 0.0, (1, 2): 1.0, (2, 0): 0.0, (2, 1): 1.0, (2, 2): 1.0}
+SOLVED AT T =  3

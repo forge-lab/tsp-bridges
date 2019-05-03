@@ -69,6 +69,7 @@ def find_bundles(filename):
 
 bundles = find_bundles(filename)
 B = len(bundles)
+print("B= ", B)
 
 def random_choose_bundles(bundles, k):
     sample = random.sample(bundles.keys(), k)
@@ -82,7 +83,7 @@ def random_choose_bundles(bundles, k):
     return result
 
 sample = random_choose_bundles(bundles, k)
-print("sample:", sample)
+# print("sample:", sample)
 
 def create_dist_matrix(sample):
     nodes = [node for bundle in sample for node in bundle]
@@ -101,10 +102,10 @@ def create_dist_matrix(sample):
         body = body[:-1] + "\n"
 
 
-    print(str(n) + "\n" + header + "\n" +  body)
+    # print(str(n) + "\n" + header + "\n" +  body)
     with open('test'+str(k)+'/node' + str(test_id), 'w') as outfile:
         
-        outfile.write(header + "\n" +  body)
+        outfile.write(str(n) + "\n" + header + "\n" +  body)
 
 
 

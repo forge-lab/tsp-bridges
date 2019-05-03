@@ -58,6 +58,8 @@ for u in nodes:
         bu = db[u]
         bv = db[v]
         if bu != bv:
+            # e_uv_t = 1 => b_u_t = 1 & b_v_t+1 = 0
+            # e_uv_t = 0 OR (b_u_t - b_v_t+!)
             for t in range(T-1):
                 c = LinExpr()
                 c.add(1-vars[u,v,t]) # if e(u,v,t) = 1 

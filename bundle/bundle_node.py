@@ -39,7 +39,7 @@ def subtourelim(model, where):
 
 # Given a tuplelist of city timestep, validate connectivity 
 def subtour(steps):
-    for t in range(n-1):
+    for t in range(T-1):
         curr = steps.select("*",t)[0][0]
         next = steps.select("*",t+1)[0][0]
         if (curr,next) not in dist:
@@ -221,13 +221,13 @@ def main():
     bd = get_bundle_dict(bundles) # bundle dictionary {node: bundle}
     B = len(bundles) # number of bundles 
     n = len(nodes) # number of nodes 
-    print("nodes: ", nodes)
-    print("dist: ", dist)
-    print("adj: ", adj)
-    print("bundles: ", bundles)
-    print("bd: ", bd)    
-    print("B = ", B)
-    print("==============")
+    # print("nodes: ", nodes)
+    # print("dist: ", dist)
+    # print("adj: ", adj)
+    # print("bundles: ", bundles)
+    # print("bd: ", bd)    
+    # print("B = ", B)
+    # print("==============")
 
     for T in range(B, n):
         print("############################## T = ", T)

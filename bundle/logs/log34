@@ -1,0 +1,55 @@
+############################## T =  3
+Academic license - for non-commercial use only
+Changed value of parameter lazyConstraints to 1
+   Prev: 0  Min: 0  Max: 1  Default: 0
+Optimize a model with 162 rows, 24 columns and 528 nonzeros
+Model has 40 quadratic objective terms
+Variable types: 0 continuous, 24 integer (24 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [0e+00, 0e+00]
+  QObjective range [4e+02, 3e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 2e+00]
+Found heuristic solution: objective 23594.000000
+Presolve removed 60 rows and 6 columns
+Presolve time: 0.00s
+Presolved: 142 rows, 58 columns, 434 nonzeros
+Variable types: 0 continuous, 58 integer (58 binary)
+
+Root relaxation: objective 0.000000e+00, 8 iterations, 0.00 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00000    0    6 23594.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    6 23594.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    6 23594.0000    0.00000   100%     -    0s
+H    0     0                    18664.000000    0.00000   100%     -    0s
+     0     0    0.00000    0    6 18664.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    6 18664.0000    0.00000   100%     -    0s
+H    0     0                    17200.000000    0.00000   100%     -    0s
+     0     2    0.00000    0    6 17200.0000    0.00000   100%     -    0s
+H   16     4                    17199.000000 9467.50000  45.0%   6.8    0s
+*   18     4               7    16847.000000 12239.2000  27.4%   6.2    0s
+
+Cutting planes:
+  MIR: 2
+  Zero half: 7
+
+Explored 22 nodes (133 simplex iterations) in 0.05 seconds
+Thread count was 4 (of 4 available processors)
+
+Solution count 5: 16847 17199 17200 ... 23594
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.684700000000e+04, best bound 1.684700000000e+04, gap 0.0000%
+
+Optimal cost: 16847
+print out solution in ascending timestep
+timestep  0 :  93368
+timestep  0 :  93367
+timestep  1 :  88724
+timestep  2 :  95453
+{(0, 0): 0.0, (0, 1): -5.551115123125783e-17, (0, 2): 1.0, (1, 0): 0.0, (1, 1): 0.0, (1, 2): 1.0, (2, 0): 0.0, (2, 1): 1.0, (2, 2): 1.0}
+SOLVED AT T =  3

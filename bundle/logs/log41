@@ -1,0 +1,57 @@
+############################## T =  4
+Academic license - for non-commercial use only
+Changed value of parameter lazyConstraints to 1
+   Prev: 0  Min: 0  Max: 1  Default: 0
+Optimize a model with 1506 rows, 60 columns and 5268 nonzeros
+Model has 330 quadratic objective terms
+Variable types: 0 continuous, 60 integer (60 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [0e+00, 0e+00]
+  QObjective range [4e+01, 3e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 2e+00]
+Found heuristic solution: objective 14553.000000
+Presolve removed 317 rows and 8 columns
+Presolve time: 0.01s
+Presolved: 1519 rows, 382 columns, 4848 nonzeros
+Variable types: 0 continuous, 382 integer (382 binary)
+
+Root relaxation: objective 0.000000e+00, 13 iterations, 0.00 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     0    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+     0     2    0.00000    0    8 14553.0000    0.00000   100%     -    0s
+
+Cutting planes:
+  Cover: 14
+  Clique: 2
+  MIR: 3
+  Inf proof: 7
+  Zero half: 2
+
+Explored 1485 nodes (9808 simplex iterations) in 1.46 seconds
+Thread count was 4 (of 4 available processors)
+
+Solution count 1: 14553 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.455300000000e+04, best bound 1.455300000000e+04, gap 0.0000%
+
+Optimal cost: 14553
+print out solution in ascending timestep
+timestep  0 :  120335
+timestep  1 :  89711
+timestep  2 :  106217
+timestep  3 :  90119
+{(0, 0): 0.0, (0, 1): 1.0, (0, 2): 1.0, (0, 3): 1.0, (1, 0): 0.0, (1, 1): 0.0, (1, 2): 0.0, (1, 3): 1.0, (2, 0): 0.0, (2, 1): 0.0, (2, 2): 1.0, (2, 3): 1.0, (3, 0): 0.0, (3, 1): 0.0, (3, 2): 0.0, (3, 3): 1.0}
+SOLVED AT T =  4
