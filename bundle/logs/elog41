@@ -45,7 +45,7 @@ Cutting planes:
   Inf proof: 3
   Zero half: 3
 
-Explored 1612 nodes (11393 simplex iterations) in 0.64 seconds
+Explored 1612 nodes (11393 simplex iterations) in 0.66 seconds
 Thread count was 4 (of 4 available processors)
 
 Solution count 8: 14553 15014 16484 ... 25470
