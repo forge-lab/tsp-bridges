@@ -1,5 +1,6 @@
 # Yinglan Chen
 # March - April, 2019
+# or try from last to small
 from parse import parse_node_dist,parse_bundle,get_bundle_dict
 import sys 
 from gurobipy import *
@@ -192,7 +193,8 @@ def solve(T):
     m.setObjective(goal, GRB.MINIMIZE) 
 
     m.optimize(subtourelim)
-
+    constrs = m.getConstrs()
+    print("NUMBER OF CONSTRAINTS: ", len(constrs))
     print('')
     if (m.status == GRB.OPTIMAL):
 

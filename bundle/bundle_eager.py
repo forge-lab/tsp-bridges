@@ -5,7 +5,6 @@ from parse import parse_node_dist,parse_bundle,get_bundle_dict
 import sys 
 from gurobipy import *
 
-
 def eager_connectivity(m, vars_n):
     for timestep in range(T-1):
         for node in nodes:
@@ -165,9 +164,10 @@ def solve(T):
     m._bundles = vars_b
     m.Params.lazyConstraints = 1
     m.setObjective(goal, GRB.MINIMIZE) 
-
+    
     m.optimize()
-
+    constrs = m.getConstrs()
+    print("NUMBER OF CONSTRAINTS: ", len(constrs))
     print('')
     if (m.status == GRB.OPTIMAL):
 
