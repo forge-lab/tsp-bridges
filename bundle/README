@@ -1,2 +1,6 @@
+basic example usage:
 python3 bundle_node.py node_to_node bundles
 
+To benchmark eager:
+e.g. if want to run the 1st test in test7
+./eager.sh 7 1
