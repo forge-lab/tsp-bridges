@@ -19,7 +19,6 @@ def subtourelim(model, where):
             broken = tour[0]
             broken2 = tour[1]
             timestep = tour[2]
-            # print("broken at vertices ", broken, broken2, "at timestep ", timestep)
             
             # node t implies neighbor t+1
             # x_t => (n1_t+1 or n2_t+1)
@@ -191,7 +190,10 @@ def solve(T):
     m._bundles = vars_b
     m.Params.lazyConstraints = 1
     m.setObjective(goal, GRB.MINIMIZE) 
-
+    m.update()
+    constrs = m.getConstrs()
+    print("NUMBER OF CONSTRAINTS BEFORE CALLBACK: ", len(constrs))
+    print('')
     m.optimize(subtourelim)
     constrs = m.getConstrs()
     print("NUMBER OF CONSTRAINTS: ", len(constrs))
